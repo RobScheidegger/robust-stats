@@ -1,14 +1,26 @@
-use pyo3::prelude::*;
+use numpy::ndarray::{ArrayD, ArrayViewD, ArrayViewMutD};
+use numpy::{IntoPyArray, PyArrayDyn, PyReadonlyArrayDyn};
+use pyo3::IntoPy;
+use pyo3::{pymodule, types::PyModule, PyResult, Python};
 
-/// Formats the sum of two numbers as string.
-#[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
-}
-
-/// A Python module implemented in Rust.
 #[pymodule]
-fn basic_mean(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+fn basic_mean_benchmark<'py>(_py: Python<'py>, m: &'py PyModule) -> PyResult<()> {
+    #[pyfn(m)]
+    #[pyo3(name = "mean_numpy")]
+    fn mean_numpy<'py>(py: Python<'py>, x: PyReadonlyArrayDyn<'py, f32>) -> Option<f32> {
+        let dims = x.shape();
+        if dims.len() != 2 {
+            panic!("Expected a 2D array!");
+        }
+
+        let n = dims[0] as f32;
+
+        let a = x.as_array();
+        //.mean_axis(numpy::ndarray::Axis(0));
+        //.expect("Mean should not fail.");
+        //.into_pyarray(py);
+        return Some(0.0);
+    }
+
     Ok(())
 }

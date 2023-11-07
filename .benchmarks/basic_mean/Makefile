@@ -1,0 +1,3 @@
+all:
+	maturin develop
+	richbench .

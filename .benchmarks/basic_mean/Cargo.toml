@@ -1,12 +1,13 @@
 [package]
-name = "basic_mean"
+name = "basic_mean_benchmark"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "basic_mean"
+name = "basic_mean_benchmark"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.19.0"
+numpy = "0.20.0"
+pyo3 = { version = "0.20", features = ["extension-module"] }

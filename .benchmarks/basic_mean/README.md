@@ -2,7 +2,7 @@
 
 This contains a simple benchmark to compare the trivial average computation in different forms:
 
-1. Python (Naive)
+1. Python (Naive) - Ignored for the sake of tests, because this is several orders of magnitude slower.
 2. Python (Numpy) 
 3. Python-wrapped Naive Rust Implementation
 4. Python-wrapped BLAS Rust Implementation
