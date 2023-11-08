@@ -1,3 +1,5 @@
 all:
-	maturin develop
-	richbench .
+	maturin develop --release
+
+test: all
+	richbench . --markdown

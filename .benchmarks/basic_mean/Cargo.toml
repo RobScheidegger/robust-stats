@@ -9,5 +9,7 @@ name = "basic_mean_benchmark"
 crate-type = ["cdylib"]
 
 [dependencies]
+cblas = "0.4.0"
 numpy = "0.20.0"
 pyo3 = { version = "0.20", features = ["extension-module"] }
+rblas = "0.0.13"
