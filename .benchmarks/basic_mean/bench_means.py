@@ -30,18 +30,6 @@ def mean_rust_native_fast() -> np.ndarray:
     return basic_mean_benchmark.mean_native_fast(INPUT_DATA)
 
 
-def mean_rust_native_transpose() -> np.ndarray:
-    return basic_mean_benchmark.mean_native_transpose(INPUT_DATA_TRANSPOSED)
-
-
-def mean_rust_native_transpose_unroll() -> np.ndarray:
-    return basic_mean_benchmark.mean_native_transpose_unroll(INPUT_DATA_TRANSPOSED)
-
-
-def mean_rust_native_transpose_blas() -> np.ndarray:
-    return basic_mean_benchmark.mean_native_transpose_blas(INPUT_DATA_TRANSPOSED)
-
-
 def mean_rust_native_blas() -> np.ndarray:
     return basic_mean_benchmark.mean_native_blas(INPUT_DATA)
 
@@ -51,15 +39,8 @@ __benchmarks__ = [
     (mean_numpy, mean_numpy, "Numpy"),
     (mean_numpy, mean_rust_numpy, "Numpy (Rust)"),
     (mean_numpy, mean_rust_native, "Native (Rust)"),
-    (mean_numpy, mean_rust_native_fast, "Native (Rust) - Fast"),
-    (mean_numpy, mean_rust_native_transpose, "Native (Rust) - Transposed"),
-    (
-        mean_numpy,
-        mean_rust_native_transpose_unroll,
-        "Native (Rust) - Transposed (Unrolled)",
-    ),
-    (mean_numpy, mean_rust_native_transpose_blas, "Native (Rust) - Transposed (BLAS)"),
-    (mean_numpy, mean_rust_native_blas, "Native (Rust) (BLAS)"),
+    (mean_numpy, mean_rust_native_fast, "Native (Rust) - Alternate"),
+    (mean_numpy, mean_rust_native_blas, "Native (Rust w/BLAS)"),
 ]
 
 if __name__ == "__main__":
