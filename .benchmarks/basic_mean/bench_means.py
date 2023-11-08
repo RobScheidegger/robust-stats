@@ -26,6 +26,10 @@ def mean_rust_native() -> np.ndarray:
     return basic_mean_benchmark.mean_native(INPUT_DATA)
 
 
+def mean_rust_native_fast() -> np.ndarray:
+    return basic_mean_benchmark.mean_native_fast(INPUT_DATA)
+
+
 def mean_rust_native_transpose() -> np.ndarray:
     return basic_mean_benchmark.mean_native_transpose(INPUT_DATA_TRANSPOSED)
 
@@ -47,6 +51,7 @@ __benchmarks__ = [
     (mean_numpy, mean_numpy, "Numpy"),
     (mean_numpy, mean_rust_numpy, "Numpy (Rust)"),
     (mean_numpy, mean_rust_native, "Native (Rust)"),
+    (mean_numpy, mean_rust_native_fast, "Native (Rust) - Fast"),
     (mean_numpy, mean_rust_native_transpose, "Native (Rust) - Transposed"),
     (
         mean_numpy,

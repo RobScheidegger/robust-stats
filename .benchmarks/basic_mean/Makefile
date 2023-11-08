@@ -2,4 +2,4 @@ all:
 	maturin develop --release
 
 test: all
-	richbench . --markdown
+	richbench . --markdown --times 5
