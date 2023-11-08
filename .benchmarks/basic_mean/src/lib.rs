@@ -119,10 +119,10 @@ fn basic_mean_benchmark<'py>(_py: Python<'py>, m: &'py PyModule) -> PyResult<()>
             let output_location = unsafe { result_view.offset((j) as isize) };
             let input_pointer = unsafe { input_ptr.offset((j * input_stride) as isize) };
             let mut ptr = input_pointer;
-            for _ in 0..(n / 8) {
-                let slice = unsafe { std::slice::from_raw_parts(ptr, 8) };
+            for _ in 0..(n / 32) {
+                let slice = unsafe { std::slice::from_raw_parts(ptr, 32) };
                 sum += slice.iter().sum::<f32>();
-                ptr = unsafe { ptr.offset(8) };
+                ptr = unsafe { ptr.offset(32) };
             }
             unsafe {
                 *output_location = sum / (n as f32);
