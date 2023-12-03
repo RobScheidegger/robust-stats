@@ -1,53 +1,61 @@
 import os
 
-N = 10**4
-D = 10**4
-
 # Use these to ensure fairness, since this is all single-threaded
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 
 import numpy as np
 import basic_mean_benchmark
-
-INPUT_DATA = np.random.rand(N, D).astype(np.float32)
-INPUT_DATA_TRANSPOSED = INPUT_DATA.T.copy()
+import time
 
 
-def mean_numpy() -> np.ndarray:
-    return np.mean(INPUT_DATA.T, axis=1)
+def mean_numpy(input: np.ndarray) -> np.ndarray:
+    return np.mean(input, axis=0)
 
 
-def mean_rust_numpy() -> np.ndarray:
-    return basic_mean_benchmark.mean_numpy(INPUT_DATA)
+def mean_rust_native(input: np.ndarray) -> np.ndarray:
+    return basic_mean_benchmark.mean_native(input)
 
 
-def mean_rust_native() -> np.ndarray:
-    return basic_mean_benchmark.mean_native(INPUT_DATA)
-
-
-def mean_rust_native_fast() -> np.ndarray:
-    return basic_mean_benchmark.mean_native_fast(INPUT_DATA)
-
-
-def mean_rust_native_blas() -> np.ndarray:
-    return basic_mean_benchmark.mean_native_blas(INPUT_DATA)
+def mean_rust_numpy(input: np.ndarray) -> np.ndarray:
+    return basic_mean_benchmark.mean_numpy(input)
 
 
 __benchmarks__ = [
     # (e, mean_naive, "Naive (Python) - Baseline"),
     (mean_numpy, mean_numpy, "Numpy"),
-    (mean_numpy, mean_rust_numpy, "Numpy (Rust)"),
     (mean_numpy, mean_rust_native, "Native (Rust)"),
-    (mean_numpy, mean_rust_native_fast, "Native (Rust) - Alternate"),
-    (mean_numpy, mean_rust_native_blas, "Native (Rust w/BLAS)"),
 ]
 
 if __name__ == "__main__":
-    print("Testing correctness of implementations...")
+    N = 10**4
+    D = 10**5
 
-    naive = mean_numpy()
-    native_transposed = np.mean(INPUT_DATA_TRANSPOSED, axis=1)
+    SAMPLES = 100
 
-    for _, f, _ in __benchmarks__:
-        print("Testing", f.__name__, "...", "OK" if np.allclose(naive, f()) else "FAIL")
+    input_data = np.random.rand(N, D).astype(np.float32)
+    # Skip every other sample in the input array
+    input_data = input_data[::2]
+
+    # First, time the amount of time the regular numpy implementation takes
+    start = time.time()
+    for _ in range(SAMPLES):
+        mean_numpy(input_data)
+    end = time.time()
+
+    print(f"Python (Numpy) took {end - start} seconds")
+
+    # Now, time the amount of time the Rust implementation takes
+    start = time.time()
+    for _ in range(SAMPLES):
+        mean_rust_native(input_data)
+    end = time.time()
+
+    print(f"Rust (Native) took {end - start} seconds")
+
+    start = time.time()
+    for _ in range(SAMPLES):
+        mean_rust_numpy(input_data)
+    end = time.time()
+
+    print(f"Rust (Numpy) took {end - start} seconds")
