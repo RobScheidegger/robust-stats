@@ -42,6 +42,29 @@ fn robust_stats<'py>(_py: Python<'py>, m: &'py PyModule) -> PyResult<()> {
         return result_array.into_pyarray(py);
     }
 
+    #[pyfn(m)]
+    #[pyo3(name = "robust_mean_filter")]
+    fn robust_mean_filter<'py>(
+        py: Python<'py>,
+        x: PyReadonlyArrayDyn<'py, f32>,
+        epsilon: f32,
+    ) -> &'py PyArrayDyn<f32> {
+        let n = x.shape()[0];
+        let d = x.shape()[1];
+        let mut result_array = ArrayD::<f32>::zeros(vec![d]);
+
+        let input_matrix = FastMatrix::from_ptr(x.as_raw_array_mut().as_mut_ptr(), n, d);
+        let mut output_matrix = FastMatrix::from_ptr(result_array.as_mut_ptr(), 1, d);
+
+        robust::mean::robust_mean_filter::robust_mean_filter(
+            &input_matrix,
+            epsilon,
+            &mut output_matrix,
+        );
+
+        return result_array.into_pyarray(py);
+    }
+
     // // wrapper of `mult`
     // #[pyfn(m)]
     // #[pyo3(name = "robust_mean")]

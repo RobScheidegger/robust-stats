@@ -11,17 +11,22 @@ pub fn robust_mean_heuristic(x: &FastMatrix<f32>, epsilon: f32, output: &mut Fas
 
     let x_view = x.to_array_view();
 
-    let cov_x = x_view.cov(1.0).unwrap();
+    let cov_x = x_view.t().cov(0.0).unwrap();
 
-    let (mut v1, _) = cov_x.eig().unwrap();
-    let v = FastMatrix::from_ptr(v1.as_mut_ptr(), d, 1);
-    let v_slice = v.get_row_slice(0);
+    let (_, mut v1) = cov_x.eig().unwrap();
+    let v = FastMatrix::from_ptr(v1.as_mut_ptr(), 1, d);
+    let v_slice = v.get_slice();
 
     // Compute and store the regular mean of the data
     crate::mean::nd_mean(x, output);
-    let mut mean_x = output.get_row_slice_mut(0);
+    let mean_x = output.get_slice_mut();
 
     let mut pq: PriorityQueue<usize, NotNan<f32>> = PriorityQueue::new();
+
+    let mut projected_mean = 0.0;
+    for i in 0..d {
+        projected_mean += mean_x[i] * v_slice[i].re();
+    }
 
     // Remove the epsilon * n fraction of points with the largest projection onto the first eigenvector
     for i in 0..n {
@@ -30,7 +35,8 @@ pub fn robust_mean_heuristic(x: &FastMatrix<f32>, epsilon: f32, output: &mut Fas
         for j in 0..d {
             projection += row[j] * v_slice[j].re();
         }
-        pq.push(i, NotNan::new(projection).unwrap());
+        projection = projection - projected_mean;
+        pq.push(i, NotNan::new(projection.abs()).unwrap());
     }
 
     // TODO: Remove old values to keep the PQ size small

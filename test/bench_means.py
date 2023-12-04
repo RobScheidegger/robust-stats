@@ -18,14 +18,14 @@ def mean_rust_native(input: np.ndarray) -> np.ndarray:
 
 
 def mean_rust_heuristic(input: np.ndarray) -> np.ndarray:
-    return robust_stats.robust_mean_heuristic(input)
+    return robust_stats.robust_mean_heuristic(input, 0.1)
 
 
 if __name__ == "__main__":
     N = 10**4
-    D = 10**5
+    D = 10**4
 
-    SAMPLES = 10
+    SAMPLES = 1
 
     input_data = np.random.rand(N, D).astype(np.float32)
     # Skip every other sample in the input array
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     start = time.time()
     for _ in range(SAMPLES):
-        mean_rust_heuristic(input_data, 0.1)
+        mean_rust_heuristic(input_data)
     end = time.time()
 
     print(f"Rust (Heuristic) took {end - start} seconds")

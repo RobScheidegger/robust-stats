@@ -9,14 +9,18 @@ name = "robust_stats"
 crate-type = ["cdylib"]
 path = "src/robust-stats.rs"
 
-[features]
-openblas = ["ndarray-linalg/openblas"]
-
 [dependencies]
 cblas = "0.4.0"
-ndarray-linalg = "0.16.0"
+eigenvalues = "0.4.0"
+lapack = "0.19.0"
+nalgebra = "0.32.3"
+ndarray = "0.15.6"
+# ndarray-linalg = "0.16.0"
+ndarray-linalg = { version = "0.16", features = ["openblas-static"] }
 ndarray-stats = "0.5.1"
 numpy = "0.20.0"
+openblas-src = "0.10.8"
 ordered-float = "4.1.1"
 priority-queue = "1.3.2"
 pyo3 = { version = "0.20" }
+special = "0.10.2"

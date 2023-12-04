@@ -31,6 +31,10 @@ impl<T> FastMatrix<T> {
         return unsafe { std::slice::from_raw_parts(self.data, self.d * self.n) };
     }
 
+    pub fn get_slice_mut(&mut self) -> &mut [T] {
+        return unsafe { std::slice::from_raw_parts_mut(self.data, self.d * self.n) };
+    }
+
     pub fn to_array_view(&self) -> ArrayView2<T> {
         return unsafe { ArrayView2::from_shape_ptr((self.n, self.d), self.data) };
     }
