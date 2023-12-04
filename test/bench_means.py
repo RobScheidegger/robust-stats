@@ -5,7 +5,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 
 import numpy as np
-import basic_mean_benchmark
+import robust_stats
 import time
 
 
@@ -14,28 +14,17 @@ def mean_numpy(input: np.ndarray) -> np.ndarray:
 
 
 def mean_rust_native(input: np.ndarray) -> np.ndarray:
-    return basic_mean_benchmark.mean_native(input)
+    return robust_stats.mean(input)
 
-
-def mean_rust_numpy(input: np.ndarray) -> np.ndarray:
-    return basic_mean_benchmark.mean_numpy(input)
-
-
-__benchmarks__ = [
-    # (e, mean_naive, "Naive (Python) - Baseline"),
-    (mean_numpy, mean_numpy, "Numpy"),
-    (mean_numpy, mean_rust_native, "Native (Rust)"),
-]
 
 if __name__ == "__main__":
     N = 10**4
     D = 10**5
 
-    SAMPLES = 100
+    SAMPLES = 10
 
     input_data = np.random.rand(N, D).astype(np.float32)
     # Skip every other sample in the input array
-    input_data = input_data[::2]
 
     # First, time the amount of time the regular numpy implementation takes
     start = time.time()
@@ -53,9 +42,9 @@ if __name__ == "__main__":
 
     print(f"Rust (Native) took {end - start} seconds")
 
-    start = time.time()
-    for _ in range(SAMPLES):
-        mean_rust_numpy(input_data)
-    end = time.time()
+    # start = time.time()
+    # for _ in range(SAMPLES):
+    #     mean_rust_numpy(input_data)
+    # end = time.time()
 
-    print(f"Rust (Numpy) took {end - start} seconds")
+    # print(f"Rust (Numpy) took {end - start} seconds")
