@@ -12,8 +12,6 @@ pub fn nd_mean(x: &FastMatrix<f32>, output: &mut FastMatrix<f32>) {
         }
     }
 
-    let n: f32 = n as f32;
-
     for di in 0..d {
         output_slice[di] /= n as f32;
     }

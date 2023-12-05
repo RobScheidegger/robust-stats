@@ -60,7 +60,7 @@ pub fn robust_mean_filter(x: &FastMatrix<f32>, epsilon: f32, output: &mut FastMa
 
     let centered_data_transpose = centered_data.t().to_owned();
     let (U, S, _) = centered_data_transpose
-        .svd(true, true)
+        .svd(true, false)
         .expect("SVD failed to converge");
 
     let lambda = S[0].pow(2.0);
