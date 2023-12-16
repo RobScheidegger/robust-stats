@@ -1,70 +1,68 @@
-// // function [mu] = robust_mean_pgd(X, eps)
-// // % N = number of samples, d = dimension.
-
-// // w = ones(N, 1) / N;
-// // for itr = 1:nItr
-
-// //     Xw = X' * w;
-// //     Sigma_w_fun = @(v) X' * (w .* (X * v)) - Xw * Xw' * v;
-// //     [u, lambda1] = eigs(Sigma_w_fun, d, 1);
-
-// //     % Compute the gradient of spectral norm (assuming unique top eigenvalue)
-// //     Xu = X * u;
-// //     nabla_f_w = Xu .* Xu - 2 * (w' * Xu) * Xu;
-// //     old_w = w;
-// //     w = w - stepSz * nabla_f_w / norm(nabla_f_w);
-// //     % Projecting w onto the feasible region
-// //     w = project_onto_capped_simplex_simple(w, 1 / (N - epsN));
-
-// //     % Use adaptive step size.
-// //     %   If objective function decreases, take larger steps.
-// //     %   If objective function increases, take smaller steps.
-// //     Sigma_w_fun = @(v) X' * (w .* (X * v)) - Xw * Xw' * v;
-// //     [~, new_lambda1] = eigs(Sigma_w_fun, d, 1);
-// //     if (new_lambda1 < lambda1)
-// //         stepSz = stepSz * 2;
-// //     else
-// //         stepSz = stepSz / 4;
-// //         w = old_w;
-// //     end
-// // end
-// // mu = X' * w;
-// // end
+use ndarray::Array2;
+use ndarray_linalg::{Eigh, Norm, UPLO};
 
 use crate::matrix::FastMatrix;
 
-pub fn robust_mean_pgd(x: &FastMatrix<f32>, epsilon: f32, output: &mut FastMatrix<f32>) {
-    return;
-    // let n = x.n;
-    // let d = x.d;
+pub fn robust_mean_pgd(
+    x: &FastMatrix<f32>,
+    epsilon: f32,
+    output: &mut FastMatrix<f32>,
+    num_iterations: Option<usize>,
+) {
+    let n = x.n;
+    let d = x.d;
+    let epsilon_n = (epsilon * n as f32).round() as usize;
+    let step_size = 1.0 / (n as f32);
 
-    // let epsilon_n = (epsilon * n as f32).round() as usize;
-    // let step_size = 1.0 / (n as f32);
+    let x = x.to_array_view();
+    let xt = x.t().to_owned();
+    let mut w = Array2::<f32>::ones((1, n)) / (n as f32);
+    let mut dw = Array2::<f32>::zeros((n, n));
+    let mut xw_outer = Array2::<f32>::zeros((d, d));
 
-    // const NUM_ITERATIONS: usize = 10;
+    for _ in 0..num_iterations.unwrap_or(10) {
+        let xw = &xt * &w;
+        for i in 0..n {
+            dw[[i, i]] = w[[0, i]];
+        }
+        for i in 0..d {
+            for j in 0..d {
+                xw_outer[[i, j]] = xw[[0, i]] * xw[[0, j]];
+            }
+        }
 
-    // let mut w = Array2::<f32>::ones((n, 1)) / (n as f32);
-    // let X = x.to_array_view();
-    // let X_t = X.t().to_owned();
-    // let Xw = &X_t * &w;
-    // let mut Dw = Array2::<f32>::zeros((n, n));
-    // for i in 0..n {
-    //     Dw[[i, i]] = w[[i, 0]];
-    // }
-    // let Xw_t = Xw.t().to_owned();
-    // let E = &X_t * Dw * &X - (&Xw) * Xw_t;
+        // check outer product here
+        let sigma_w = &xt.dot(&dw).dot(&x) - &xw_outer;
+        let (eigs, vecs) = sigma_w.eigh(UPLO::Lower).unwrap();
+        // max eigenvalue
+        let mut max_eig_idx = 0;
+        let mut max_eig = eigs[0];
+        for i in 1..d {
+            let eig_norm = eigs[i];
+            if eig_norm > max_eig {
+                max_eig = eig_norm;
+                max_eig_idx = i;
+            }
+        }
+        let u = vecs.column(max_eig_idx).to_owned();
 
-    // let (u, lambda) = E.eig().unwrap();
+        let xu = x.dot(&u);
+        let uxw = &u.dot(&xw)[[0]];
+        let nabla_f_u = &xu * &xu - 2.0 * uxw * &xu;
+        let norm = nabla_f_u.norm();
+        w = &w - step_size * &nabla_f_u / nabla_f_u.norm();
 
-    // let mut best_eigenvalue_index = 0;
-    // let mut best_eigenvalue_distance = lambda[0] - 1.abs() - 1;
+        project_onto_capped_simplex_simple(w.as_slice_mut().unwrap(), 1.0 / (n - epsilon_n) as f32);
+    }
 
-    // for i in 1..d {
-    //     if lambda[i] > best_eigenvalue {
-    //         best_eigenvalue_index = i;
-    //         best_eigenvalue = lambda[i];
-    //     }
-    // }
+    // fill output using weight as weighted average for the samples in X
+    let output_slice = output.get_slice_mut();
+    for i in 0..d {
+        output_slice[i] = 0.0;
+        for j in 0..n {
+            output_slice[i] += w[[0, j]] * x[[j, i]];
+        }
+    }
 }
 
 fn project_onto_capped_simplex_simple(w: &mut [f32], cap: f32) {
