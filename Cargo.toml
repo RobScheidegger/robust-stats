@@ -11,11 +11,8 @@ path = "src/robust-stats.rs"
 
 [dependencies]
 cblas = "0.4.0"
-eigenvalues = "0.4.0"
-lapack = "0.19.0"
 nalgebra = "0.32.3"
 ndarray = "0.15.6"
-# ndarray-linalg = "0.16.0"
 ndarray-linalg = { version = "0.16", features = ["openblas-static"] }
 ndarray-stats = "0.5.1"
 numpy = "0.20.0"
