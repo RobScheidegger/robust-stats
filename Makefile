@@ -2,4 +2,4 @@ all:
 	maturin develop --release
 
 test: all
-	python test/bench_means.py
+	python -m unittest test/test_robust_mean.py

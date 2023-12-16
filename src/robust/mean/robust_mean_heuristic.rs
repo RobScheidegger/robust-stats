@@ -5,6 +5,7 @@ use ndarray_stats::CorrelationExt;
 use ordered_float::NotNan;
 use priority_queue::PriorityQueue;
 
+/// Hueuristic based approach for computing the robust mean of a dataset.
 pub fn robust_mean_heuristic(x: &FastMatrix<f32>, epsilon: f32, output: &mut FastMatrix<f32>) {
     let n = x.n;
     let d = x.d;
@@ -13,7 +14,8 @@ pub fn robust_mean_heuristic(x: &FastMatrix<f32>, epsilon: f32, output: &mut Fas
 
     let cov_x = x_view.t().cov(0.0).unwrap();
 
-    let (_, mut v1) = cov_x.eig().unwrap();
+    let (_, mut v1) = cov_x.eigh(UPLO::Upper).unwrap();
+
     let v = FastMatrix::from_ptr(v1.as_mut_ptr(), 1, d);
     let v_slice = v.get_slice();
 
@@ -61,6 +63,4 @@ pub fn robust_mean_heuristic(x: &FastMatrix<f32>, epsilon: f32, output: &mut Fas
     for j in 0..d {
         mean_x[j] *= scale;
     }
-
-    // Output is then defined!
 }
