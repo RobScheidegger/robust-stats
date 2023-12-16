@@ -49,7 +49,6 @@ pub fn robust_mean_pgd(
         let xu = x.dot(&u);
         let uxw = &u.dot(&xw)[[0]];
         let nabla_f_u = &xu * &xu - 2.0 * uxw * &xu;
-        let norm = nabla_f_u.norm();
         w = &w - step_size * &nabla_f_u / nabla_f_u.norm();
 
         project_onto_capped_simplex_simple(w.as_slice_mut().unwrap(), 1.0 / (n - epsilon_n) as f32);
