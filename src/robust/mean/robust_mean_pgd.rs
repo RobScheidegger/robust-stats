@@ -22,19 +22,34 @@ pub fn robust_mean_pgd(
 
     for _ in 0..num_iterations.unwrap_or(10) {
         let xw = &xt * &w;
+
+        // let start_time = std::time::Instant::now();
         for i in 0..n {
             dw[[i, i]] = w[[0, i]];
         }
+        // let elapsed = start_time.elapsed();
+        // println!("diagonalize w: {:?}", elapsed);
+
+        // let start_time = std::time::Instant::now();
         for i in 0..d {
             for j in 0..d {
                 xw_outer[[i, j]] = xw[[0, i]] * xw[[0, j]];
             }
         }
+        // let elapsed = start_time.elapsed();
+        // println!("outer product: {:?}", elapsed);
 
-        // check outer product here
+        // let start_time = std::time::Instant::now();
         let sigma_w = &xt.dot(&dw).dot(&x) - &xw_outer;
+        // let elapsed = start_time.elapsed();
+        // println!("sigma_w: {:?}", elapsed);
+
+        // let start_time = std::time::Instant::now();
         let (eigs, vecs) = sigma_w.eigh(UPLO::Lower).unwrap();
-        // max eigenvalue
+        // let elapsed = start_time.elapsed();
+        // println!("eigh: {:?}", elapsed);
+
+        // let start = std::time::Instant::now();
         let mut max_eig_idx = 0;
         let mut max_eig = eigs[0];
         for i in 1..d {
@@ -45,13 +60,18 @@ pub fn robust_mean_pgd(
             }
         }
         let u = vecs.column(max_eig_idx).to_owned();
+        // let elapsed = start.elapsed();
+        // println!("max eig: {:?}", elapsed);
 
+        // let start = std::time::Instant::now();
         let xu = x.dot(&u);
         let uxw = &u.dot(&xw)[[0]];
         let nabla_f_u = &xu * &xu - 2.0 * uxw * &xu;
         w = &w - step_size * &nabla_f_u / nabla_f_u.norm();
-
         project_onto_capped_simplex_simple(w.as_slice_mut().unwrap(), 1.0 / (n - epsilon_n) as f32);
+        // let elapsed = start.elapsed();
+        // println!("gradient + projection: {:?}", elapsed);
+        // println!("");
     }
 
     // fill output using weight as weighted average for the samples in X
