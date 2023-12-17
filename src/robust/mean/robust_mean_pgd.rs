@@ -18,10 +18,11 @@ pub fn robust_mean_pgd(
     let xt = x.t().to_owned();
     let mut w = Array2::<f32>::ones((1, n)) / (n as f32);
     let mut dw = Array2::<f32>::zeros((n, n));
-    let mut xw_outer = Array2::<f32>::zeros((d, d));
+    // let mut xw_outer = Array2::<f32>::zeros((d, d));
 
     for _ in 0..num_iterations.unwrap_or(10) {
         let xw = &xt * &w;
+        let xw_t = xw.t().to_owned();
 
         // let start_time = std::time::Instant::now();
         for i in 0..n {
@@ -31,16 +32,16 @@ pub fn robust_mean_pgd(
         // println!("diagonalize w: {:?}", elapsed);
 
         // let start_time = std::time::Instant::now();
-        for i in 0..d {
-            for j in 0..d {
-                xw_outer[[i, j]] = xw[[0, i]] * xw[[0, j]];
-            }
-        }
+        // for i in 0..d {
+        //     for j in 0..d {
+        //         xw_outer[[i, j]] = xw[[0, i]] * xw[[0, j]];
+        //     }
+        // }
         // let elapsed = start_time.elapsed();
         // println!("outer product: {:?}", elapsed);
 
         // let start_time = std::time::Instant::now();
-        let sigma_w = &xt.dot(&dw).dot(&x) - &xw_outer;
+        let sigma_w = &xt.dot(&dw).dot(&x) - &xw.dot(&xw_t);
         // let elapsed = start_time.elapsed();
         // println!("sigma_w: {:?}", elapsed);
 
