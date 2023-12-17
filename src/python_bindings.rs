@@ -19,6 +19,7 @@ fn robust_stats<'py>(_py: Python<'py>, m: &'py PyModule) -> PyResult<()> {
 
         return result_array.into_pyarray(py);
     }
+
     #[pyfn(m)]
     #[pyo3(name = "robust_mean_heuristic")]
     fn robust_mean_heuristic<'py>(
@@ -79,7 +80,12 @@ fn robust_stats<'py>(_py: Python<'py>, m: &'py PyModule) -> PyResult<()> {
         let input_matrix = FastMatrix::from_ptr(x.as_raw_array_mut().as_mut_ptr(), n, d);
         let mut output_matrix = FastMatrix::from_ptr(result_array.as_mut_ptr(), 1, d);
 
-        robust::mean::robust_mean_pgd::robust_mean_pgd(&input_matrix, epsilon, &mut output_matrix);
+        robust::mean::robust_mean_pgd::robust_mean_pgd(
+            &input_matrix,
+            epsilon,
+            &mut output_matrix,
+            None,
+        );
 
         return result_array.into_pyarray(py);
     }
